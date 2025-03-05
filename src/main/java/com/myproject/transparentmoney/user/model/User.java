@@ -1,4 +1,4 @@
-package com.myproject.transparentmoney.user;
+package com.myproject.transparentmoney.user.model;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -36,5 +36,9 @@ public class User {
     @CreationTimestamp
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
+
+    @CreationTimestamp
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
 
 }
