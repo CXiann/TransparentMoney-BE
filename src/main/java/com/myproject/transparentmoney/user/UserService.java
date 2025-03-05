@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Service;
 
+import com.myproject.transparentmoney.user.model.User;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -40,6 +42,7 @@ public class UserService {
 
     public User saveUser(User user) {
         user.setCreatedAt(OffsetDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now());
         User savedUser = userRepository.save(user);
 
         log.info("User with id: {} saved successfully", user.getId());
@@ -47,8 +50,9 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        Optional<User> optionalUser = findById(user.getId().toString());
-        if (optionalUser.isPresent()) {
+        boolean userExisted = findById(user.getId().toString()).isPresent();
+        if (userExisted) {
+            user.setUpdatedAt(OffsetDateTime.now());
             User updatedUser = userRepository.save(user);
             log.info("User with id: {} updated successfully", user.getId());
             return updatedUser;
@@ -66,5 +70,12 @@ public class UserService {
         } catch (HttpMessageNotReadableException e) {
             log.error("User with id: {} doesn't exist", uuid, e);
         }
+    }
+
+    public boolean userExists(String username, String password) {
+        List<User> users = userRepository.findByUsername(username);
+        boolean userExists = users.stream()
+                .anyMatch(user -> user.getUsername().equals(username) && user.getPassword().equals(password));
+        return userExists;
     }
 }
