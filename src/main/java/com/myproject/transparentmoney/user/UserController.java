@@ -3,7 +3,6 @@ package com.myproject.transparentmoney.user;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,7 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.myproject.transparentmoney.user.dto.AuthResponse;
+import com.myproject.transparentmoney.user.dto.request.UserCreateRequest;
+import com.myproject.transparentmoney.user.dto.request.UserUpdateRequest;
 import com.myproject.transparentmoney.user.model.User;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -33,29 +36,23 @@ public class UserController {
 
     @GetMapping("/{uuid}")
     public ResponseEntity<User> findById(@PathVariable String uuid) {
-        // can modify based on what to return to API ui
-        return ResponseEntity.ok(userService.findById(uuid).orElse(null));
+        return ResponseEntity.ok(userService.findById(uuid));
     }
 
     @PostMapping("")
-    public ResponseEntity<User> saveUser(@RequestBody User user) {
-        return ResponseEntity.ok(userService.saveUser(user));
+    public ResponseEntity<User> saveUser(@Valid @RequestBody UserCreateRequest userRequest) {
+        return ResponseEntity.ok(userService.saveUser(userRequest));
     }
 
     @PutMapping("")
-    public ResponseEntity<User> updateUser(@RequestBody User user) {
-        return ResponseEntity.ok(userService.updateUser(user));
+    public ResponseEntity<User> updateUser(@Valid @RequestBody UserUpdateRequest userRequest) {
+        return ResponseEntity.ok(userService.updateUser(userRequest));
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthResponse> authenticate(@RequestBody User user) {
-        boolean userExists = userService.userExists(user.getUsername(), user.getPassword());
-        if (userExists) {
-            return ResponseEntity.ok(new AuthResponse(true, "User authenticated successfully"));
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new AuthResponse(false, "User authentication failed"));
-        }
+    public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody UserCreateRequest userRequest) {
+        AuthResponse authResponse = userService.isAuthenticated(userRequest.username(), userRequest.password());
+        return ResponseEntity.ok(authResponse);
     }
 
     @DeleteMapping("/{uuid}")

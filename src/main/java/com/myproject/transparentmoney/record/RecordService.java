@@ -30,10 +30,10 @@ public class RecordService {
                 return optionalrecord;
             }
             log.info("Record with id: {} doesn't exist", uuid);
-            return null;
+            return Optional.ofNullable(null);
         } catch (HttpMessageNotReadableException e) {
             log.error("Record with id: {} doesn't exist", uuid, e);
-            return null;
+            return Optional.ofNullable(null);
         }
 
     }
@@ -48,11 +48,15 @@ public class RecordService {
     }
 
     public Record updateRecord(Record record) {
-        boolean recordExisted = findById(record.getId().toString()).isPresent();
-        if (recordExisted) {
-            record.setUpdatedAt(OffsetDateTime.now());
-            Record updatedRecord = recordRepository.save(record);
-            log.info("Record with id: {} updated successfully", record.getId());
+        Optional<Record> opMatchedRecord = findById(record.getId().toString());
+        if (opMatchedRecord.isPresent()) {
+            Record matchedRecord = opMatchedRecord.get();
+            matchedRecord.setUpdatedAt(OffsetDateTime.now());
+            matchedRecord.setCategory(record.getCategory());
+            matchedRecord.setDescription(record.getDescription());
+            matchedRecord.setAmount(record.getAmount());
+            Record updatedRecord = recordRepository.save(matchedRecord);
+            log.info("Record with id: {} updated successfully", matchedRecord.getId());
             return updatedRecord;
         }
         log.info("Record with id: {} doesn't exist", record.getId());

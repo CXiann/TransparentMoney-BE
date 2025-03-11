@@ -5,6 +5,9 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.myproject.transparentmoney.user.dto.request.UserUpdateRequest;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -34,11 +37,19 @@ public class User {
     private String password;
 
     @CreationTimestamp
-    @Column(name = "created_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", timezone = "UTC")
+
+    @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;
 
     @CreationTimestamp
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", timezone = "UTC")
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
+    public void updateFromDTO(UserUpdateRequest dto) {
+        this.username = dto.username();
+        this.password = dto.password();
+        this.updatedAt = OffsetDateTime.now();
+    }
 }

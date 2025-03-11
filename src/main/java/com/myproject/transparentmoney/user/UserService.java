@@ -1,14 +1,18 @@
 package com.myproject.transparentmoney.user;
 
-import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.myproject.transparentmoney.common.exception.custom.IdNotFoundException;
+import com.myproject.transparentmoney.common.exception.custom.UnauthorizedException;
+import com.myproject.transparentmoney.user.dto.AuthResponse;
+import com.myproject.transparentmoney.user.dto.request.UserCreateRequest;
+import com.myproject.transparentmoney.user.dto.request.UserUpdateRequest;
 import com.myproject.transparentmoney.user.model.User;
 
 import lombok.extern.slf4j.Slf4j;
@@ -24,51 +28,45 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public Optional<User> findById(String uuid) {
-        try {
-            UUID uuidObj = UUID.fromString(uuid);
-            Optional<User> optionaluser = userRepository.findById(uuidObj);
-            if (optionaluser.isPresent()) {
-                return optionaluser;
-            }
-            log.info("User with id: {} doesn't exist", uuid);
-            return null;
-        } catch (HttpMessageNotReadableException e) {
-            log.error("User with id: {} doesn't exist", uuid, e);
-            return null;
-        }
-
+    public User findById(String uuid) {
+        UUID uuidObj = UUID.fromString(uuid);
+        return userRepository.findById(uuidObj)
+                .orElseThrow(() -> new IdNotFoundException("User ID " + uuid + " not found"));
     }
 
-    public User saveUser(User user) {
-        user.setCreatedAt(OffsetDateTime.now());
-        user.setUpdatedAt(OffsetDateTime.now());
+    public User saveUser(UserCreateRequest userRequest) {
+        User user = new User();
+        user.setUsername(userRequest.username());
+        user.setPassword(userRequest.password());
+
         User savedUser = userRepository.save(user);
 
-        log.info("User with id: {} saved successfully", user.getId());
+        log.info("User with id: {} saved successfully", savedUser.getId());
         return savedUser;
     }
 
-    public User updateUser(User user) {
-        boolean userExisted = findById(user.getId().toString()).isPresent();
-        if (userExisted) {
-            user.setUpdatedAt(OffsetDateTime.now());
-            User updatedUser = userRepository.save(user);
-            log.info("User with id: {} updated successfully", user.getId());
-            return updatedUser;
-        }
-        log.info("User with id: {} doesn't exist", user.getId());
-        return null;
+    public User updateUser(UserUpdateRequest userRequest) {
+        User user = findById(userRequest.id());
+        user.updateFromDTO(userRequest);
 
+        User updatedUser = userRepository.save(user);
+
+        log.info("User with id: {} updated successfully", user.getId());
+        return updatedUser;
     }
 
     public void deleteUserById(String uuid) {
         try {
             UUID uuidObj = UUID.fromString(uuid);
+
+            if (!userRepository.existsById(uuidObj)) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with id: " + uuid + " not found");
+            }
+
             userRepository.deleteById(uuidObj);
             log.info("User with id: {} removed successfully", uuid);
-        } catch (HttpMessageNotReadableException e) {
-            log.error("User with id: {} doesn't exist", uuid, e);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid UUID format: " + uuid);
         }
     }
 
@@ -77,5 +75,13 @@ public class UserService {
         boolean userExists = users.stream()
                 .anyMatch(user -> user.getUsername().equals(username) && user.getPassword().equals(password));
         return userExists;
+    }
+
+    public AuthResponse isAuthenticated(String username, String password) {
+        if (userExists(username, password)) {
+            return new AuthResponse(true, "User authenticated successfully");
+        } else {
+            throw new UnauthorizedException(username);
+        }
     }
 }
