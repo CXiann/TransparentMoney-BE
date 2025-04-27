@@ -1,5 +1,6 @@
 package com.myproject.transparentmoney.user;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -8,9 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.myproject.transparentmoney.common.exception.custom.IdNotFoundException;
 import com.myproject.transparentmoney.common.exception.custom.UnauthorizedException;
 import com.myproject.transparentmoney.user.dto.AuthResponse;
+import com.myproject.transparentmoney.user.dto.UserMapper;
 import com.myproject.transparentmoney.user.dto.request.UserCreateRequest;
 import com.myproject.transparentmoney.user.dto.request.UserUpdateRequest;
 import com.myproject.transparentmoney.user.model.User;
@@ -24,6 +25,9 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserMapper userMapper;
+
     public List<User> findAll() {
         return userRepository.findAll();
     }
@@ -31,7 +35,7 @@ public class UserService {
     public User findById(String uuid) {
         UUID uuidObj = UUID.fromString(uuid);
         return userRepository.findById(uuidObj)
-                .orElseThrow(() -> new IdNotFoundException("User ID " + uuid + " not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User ID " + uuid + " not found"));
     }
 
     public User saveUser(UserCreateRequest userRequest) {
@@ -47,7 +51,9 @@ public class UserService {
 
     public User updateUser(UserUpdateRequest userRequest) {
         User user = findById(userRequest.id());
-        user.updateFromDTO(userRequest);
+
+        userMapper.updateUserFromDto(userRequest, user);
+        user.setUpdatedAt(OffsetDateTime.now());
 
         User updatedUser = userRepository.save(user);
 

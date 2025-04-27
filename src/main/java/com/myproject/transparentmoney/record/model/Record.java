@@ -1,4 +1,4 @@
-package com.myproject.transparentmoney.record;
+package com.myproject.transparentmoney.record.model;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
