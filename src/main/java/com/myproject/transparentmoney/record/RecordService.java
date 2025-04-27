@@ -2,12 +2,17 @@ package com.myproject.transparentmoney.record;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.myproject.transparentmoney.record.dto.RecordMapper;
+import com.myproject.transparentmoney.record.dto.request.RecordUpdateRequest;
+import com.myproject.transparentmoney.record.model.Record;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,24 +23,18 @@ public class RecordService {
     @Autowired
     private RecordRepository recordRepository;
 
+    @Autowired
+    private RecordMapper recordMapper;
+
     public List<Record> findAll() {
         return recordRepository.findAll();
     }
 
-    public Optional<Record> findById(String uuid) {
-        try {
-            UUID uuidObj = UUID.fromString(uuid);
-            Optional<Record> optionalrecord = recordRepository.findById(uuidObj);
-            if (optionalrecord.isPresent()) {
-                return optionalrecord;
-            }
-            log.info("Record with id: {} doesn't exist", uuid);
-            return Optional.ofNullable(null);
-        } catch (HttpMessageNotReadableException e) {
-            log.error("Record with id: {} doesn't exist", uuid, e);
-            return Optional.ofNullable(null);
-        }
-
+    public Record findById(String uuid) {
+        UUID uuidObj = UUID.fromString(uuid);
+        return recordRepository.findById(uuidObj)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Record ID " + uuid + " not found"));
     }
 
     public Record saveRecord(Record record) {
@@ -47,20 +46,16 @@ public class RecordService {
         return savedRecord;
     }
 
-    public Record updateRecord(Record record) {
-        Optional<Record> opMatchedRecord = findById(record.getId().toString());
-        if (opMatchedRecord.isPresent()) {
-            Record matchedRecord = opMatchedRecord.get();
-            matchedRecord.setUpdatedAt(OffsetDateTime.now());
-            matchedRecord.setCategory(record.getCategory());
-            matchedRecord.setDescription(record.getDescription());
-            matchedRecord.setAmount(record.getAmount());
-            Record updatedRecord = recordRepository.save(matchedRecord);
-            log.info("Record with id: {} updated successfully", matchedRecord.getId());
-            return updatedRecord;
-        }
-        log.info("Record with id: {} doesn't exist", record.getId());
-        return null;
+    public Record updateRecord(RecordUpdateRequest recordRequest) {
+        Record record = findById(recordRequest.id());
+
+        recordMapper.updateRecordFromDto(recordRequest, record);
+        record.setUpdatedAt(OffsetDateTime.now());
+
+        Record updatedRecord = recordRepository.save(record);
+
+        log.info("Record with id: {} updated successfully", record.getId());
+        return updatedRecord;
 
     }
 
