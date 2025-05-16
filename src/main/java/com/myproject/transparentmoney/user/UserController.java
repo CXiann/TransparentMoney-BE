@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.myproject.transparentmoney.user.dto.AuthResponse;
+import com.myproject.transparentmoney.user.dto.request.UserSettingUpdateRequest;
 import com.myproject.transparentmoney.user.dto.request.UserCreateRequest;
 import com.myproject.transparentmoney.user.dto.request.UserUpdateRequest;
 import com.myproject.transparentmoney.user.model.User;
@@ -53,6 +54,12 @@ public class UserController {
     public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody UserCreateRequest userRequest) {
         AuthResponse authResponse = userService.isAuthenticated(userRequest.username(), userRequest.password());
         return ResponseEntity.ok(authResponse);
+    }
+
+    @PostMapping("/language/{uuid}")
+    public ResponseEntity<User> changeLanguage(@Valid @RequestBody UserSettingUpdateRequest languageRequest,
+            @PathVariable String uuid) {
+        return ResponseEntity.ok(userService.changeLanguage(languageRequest, uuid));
     }
 
     @DeleteMapping("/{uuid}")

@@ -10,10 +10,6 @@ public class UserEntityListener {
             UserSettings settings = new UserSettings();
             settings.setUser(user);
             settings.setUserId(user.getId()); // Important: link IDs
-            // settings.setTimezone("UTC");
-            // settings.setTheme("light");
-            // settings.setPinEnabled(false);
-            // settings.setBiometricEnabled(false);
             user.setSettings(settings);
         }
     }

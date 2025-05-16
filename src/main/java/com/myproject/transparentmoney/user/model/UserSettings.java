@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-class UserSettings {
+public class UserSettings {
 
     @Id
     @JsonIgnore
@@ -47,6 +47,12 @@ class UserSettings {
 
     @Column(name = "biometric_enabled", nullable = false)
     private boolean biometricEnabled = false;
+
+    @Column(name = "currency", nullable = false)
+    private String currency = "MYR";
+
+    @Column(name = "language", nullable = false)
+    private String language = "en";
 
     @Column(name = "timezone", nullable = false)
     private String timezone = "UTC";

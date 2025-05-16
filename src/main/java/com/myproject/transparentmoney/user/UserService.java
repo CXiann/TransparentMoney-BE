@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.myproject.transparentmoney.common.exception.custom.UnauthorizedException;
 import com.myproject.transparentmoney.user.dto.AuthResponse;
 import com.myproject.transparentmoney.user.dto.UserMapper;
+import com.myproject.transparentmoney.user.dto.request.UserSettingUpdateRequest;
 import com.myproject.transparentmoney.user.dto.request.UserCreateRequest;
 import com.myproject.transparentmoney.user.dto.request.UserUpdateRequest;
 import com.myproject.transparentmoney.user.model.User;
@@ -58,6 +59,18 @@ public class UserService {
         User updatedUser = userRepository.save(user);
 
         log.info("User with id: {} updated successfully", user.getId());
+        return updatedUser;
+    }
+
+    public User changeLanguage(UserSettingUpdateRequest languageRequest, String uuid) {
+        User user = findById(uuid);
+
+        userMapper.updateUserSettingFromDto(languageRequest, user.getSettings());
+        user.setUpdatedAt(OffsetDateTime.now());
+
+        User updatedUser = userRepository.save(user);
+
+        log.info("User with id: {} updated successfully - language", user.getId());
         return updatedUser;
     }
 

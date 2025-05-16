@@ -44,12 +44,6 @@ public class User {
     @Column(name = "full_name")
     private String fullName;
 
-    @Column(name = "default_currency", nullable = false)
-    private String defaultCurrency = "MYR";
-
-    @Column(name = "language", nullable = false)
-    private String language = "en";
-
     @Column(name = "active", nullable = false)
     private boolean active = true;
 
