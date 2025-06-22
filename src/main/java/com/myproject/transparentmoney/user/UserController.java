@@ -40,20 +40,9 @@ public class UserController {
         return ResponseEntity.ok(userService.findById(uuid));
     }
 
-    @PostMapping("")
-    public ResponseEntity<User> saveUser(@Valid @RequestBody UserCreateRequest userRequest) {
-        return ResponseEntity.ok(userService.saveUser(userRequest));
-    }
-
     @PutMapping("")
     public ResponseEntity<User> updateUser(@Valid @RequestBody UserUpdateRequest userRequest) {
         return ResponseEntity.ok(userService.updateUser(userRequest));
-    }
-
-    @PostMapping("/authenticate")
-    public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody UserCreateRequest userRequest) {
-        AuthResponse authResponse = userService.isAuthenticated(userRequest.username(), userRequest.password());
-        return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/language/{uuid}")

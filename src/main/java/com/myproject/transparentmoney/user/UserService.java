@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.myproject.transparentmoney.common.exception.custom.UnauthorizedException;
 import com.myproject.transparentmoney.user.dto.AuthResponse;
 import com.myproject.transparentmoney.user.dto.UserMapper;
 import com.myproject.transparentmoney.user.dto.request.UserSettingUpdateRequest;
@@ -96,11 +95,4 @@ public class UserService {
         return userExists;
     }
 
-    public AuthResponse isAuthenticated(String username, String password) {
-        if (userExists(username, password)) {
-            return new AuthResponse(true, "User authenticated successfully");
-        } else {
-            throw new UnauthorizedException(username);
-        }
-    }
 }

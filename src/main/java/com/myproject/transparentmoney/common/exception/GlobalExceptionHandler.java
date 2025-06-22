@@ -5,12 +5,13 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.myproject.transparentmoney.common.exception.custom.UnauthorizedException;
+import com.myproject.transparentmoney.common.exception.custom.InvalidJwtTokenException;
 import com.myproject.transparentmoney.common.model.ErrorResponse;
 
 @RestControllerAdvice
@@ -24,8 +25,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex) {
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedException(BadCredentialsException ex) {
+        ErrorResponse errorResponse = new ErrorResponse("UNAUTHORIZED",
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    @ExceptionHandler(InvalidJwtTokenException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedException(InvalidJwtTokenException ex) {
         ErrorResponse errorResponse = new ErrorResponse("UNAUTHORIZED",
                 ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
